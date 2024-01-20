@@ -1,7 +1,8 @@
 import { Module } from '@nestjs/common';
+import { PlanilhasModule } from './planilhas/planilhas.module';
 
 @Module({
-  imports: [],
+  imports: [PlanilhasModule],
   controllers: [],
   providers: [],
 })
