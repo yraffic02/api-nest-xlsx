@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import * as xlsx from 'xlsx';
 import { CreatePlanilhaDto } from './dto/create-planilha.dto';
 import { UpdatePlanilhaDto } from './dto/update-planilha.dto';
 
@@ -22,5 +23,16 @@ export class PlanilhasService {
 
   remove(id: number) {
     return `This action removes a #${id} planilha`;
+  }
+
+  processarPlanilha(buffer: Buffer): any[] {
+    const workbook = xlsx.read(buffer, { type: 'buffer' });
+  
+    const primeiraFolha = workbook.SheetNames[0];
+    const worksheet = workbook.Sheets[primeiraFolha];
+  
+    const dados = xlsx.utils.sheet_to_json(worksheet, { header: 'A' });
+  
+    return dados;
   }
 }

@@ -1,15 +1,29 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
-import { PlanilhasService } from './planilhas.service';
-import { CreatePlanilhaDto } from './dto/create-planilha.dto';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  UploadedFile,
+  UseInterceptors
+} from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import * as multer from 'multer';
 import { UpdatePlanilhaDto } from './dto/update-planilha.dto';
+import { PlanilhasService } from './planilhas.service';
 
 @Controller('planilhas')
 export class PlanilhasController {
   constructor(private readonly planilhasService: PlanilhasService) {}
 
-  @Post()
-  create(@Body() createPlanilhaDto: CreatePlanilhaDto) {
-    return this.planilhasService.create(createPlanilhaDto);
+  @Post('upload')
+  @UseInterceptors(FileInterceptor('arquivo', { storage: multer.memoryStorage() }))
+  uploadPlanilha(@UploadedFile() arquivo: Express.Multer.File): any {
+    const dados = this.planilhasService.processarPlanilha(arquivo.buffer);
+
+    return { dados };
   }
 
   @Get()
