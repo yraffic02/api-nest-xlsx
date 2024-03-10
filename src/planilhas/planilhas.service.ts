@@ -1,7 +1,14 @@
 import { Injectable } from '@nestjs/common';
+import * as fs from 'node:fs';
 import * as xlsx from 'xlsx';
 import { CreatePlanilhaDto } from './dto/create-planilha.dto';
 import { UpdatePlanilhaDto } from './dto/update-planilha.dto';
+import * as path from 'path';
+
+type pramsType = {
+  coluna: string;
+  ref: string;
+};
 
 @Injectable()
 export class PlanilhasService {
@@ -27,7 +34,7 @@ export class PlanilhasService {
     return `This action removes a #${id} planilha`;
   }
 
-  processarPlanilha = (buffer, parametros?: string[]) => {
+  processarPlanilha = (buffer, parametros?: pramsType[]) => {
     const workbook = xlsx.read(buffer, { type: 'buffer' });
     const primeiraFolha = workbook.SheetNames[0];
     const worksheet = workbook.Sheets[primeiraFolha];
@@ -36,13 +43,14 @@ export class PlanilhasService {
 
     if (parametros && parametros.length > 0) {
       const colunasFiltradas = parametros.map((parametro) =>
-        parametro.toUpperCase(),
+        parametro.coluna.toUpperCase(),
       );
       dados = dados.map((linha) => {
         const linhaFiltrada = {};
-        colunasFiltradas.forEach((coluna) => {
+        colunasFiltradas.forEach((coluna, index) => {
           if (linha[coluna]) {
-            linhaFiltrada[coluna] = linha[coluna];
+            const nomeColuna = parametros[index].ref;
+            linhaFiltrada[nomeColuna] = linha[coluna];
           }
         });
         return linhaFiltrada;
@@ -51,4 +59,26 @@ export class PlanilhasService {
 
     return dados;
   };
+
+  gerarArquivoVCF(dados: any[]) {
+    let vcfData = '';
+
+    dados.forEach((contato) => {
+      vcfData += `BEGIN:VCARD\n`;
+      vcfData += `VERSION:3.0\n`;
+      vcfData += `FN:${contato.nome}\n`;
+      vcfData += `TEL:${contato.telefone}\n`;
+      vcfData += `END:VCARD\n\n`;
+    });
+
+    const directory = path.join(__dirname, 'arquivos');
+    const filePath = path.join(directory, 'contatos.vcf');
+
+    if (!fs.existsSync(directory)) {
+      fs.mkdirSync(directory, { recursive: true });
+    }
+
+    fs.writeFileSync(filePath, vcfData);
+    return vcfData;
+  }
 }

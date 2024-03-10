@@ -10,7 +10,6 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import * as multer from 'multer';
 import { UpdatePlanilhaDto } from './dto/update-planilha.dto';
 import { PlanilhasService } from './planilhas.service';
 
@@ -19,15 +18,13 @@ export class PlanilhasController {
   constructor(private readonly planilhasService: PlanilhasService) {}
 
   @Post('upload')
-  @UseInterceptors(
-    FileInterceptor('arquivo', { storage: multer.memoryStorage() }),
-  )
+  @UseInterceptors(FileInterceptor('arquivo'))
   uploadPlanilha(
     @UploadedFile() arquivo: Express.Multer.File,
     @Body('parametros') parametros: string,
+    @Body('vcf') gerarVcf?: boolean,
   ): any {
     let dados;
-
     if (parametros) {
       const paramsObj = JSON.parse(parametros);
       dados = this.planilhasService.processarPlanilha(
@@ -36,6 +33,15 @@ export class PlanilhasController {
       );
     } else {
       dados = this.planilhasService.processarPlanilha(arquivo.buffer);
+    }
+
+    if (gerarVcf) {
+      const vcf = this.planilhasService.gerarArquivoVCF(dados);
+
+      return {
+        vcf,
+        filename: 'contatos.vcf',
+      };
     }
 
     return { dados };
