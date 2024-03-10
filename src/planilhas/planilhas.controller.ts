@@ -7,7 +7,7 @@ import {
   Patch,
   Post,
   UploadedFile,
-  UseInterceptors
+  UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import * as multer from 'multer';
@@ -19,9 +19,24 @@ export class PlanilhasController {
   constructor(private readonly planilhasService: PlanilhasService) {}
 
   @Post('upload')
-  @UseInterceptors(FileInterceptor('arquivo', { storage: multer.memoryStorage() }))
-  uploadPlanilha(@UploadedFile() arquivo: Express.Multer.File): any {
-    const dados = this.planilhasService.processarPlanilha(arquivo.buffer);
+  @UseInterceptors(
+    FileInterceptor('arquivo', { storage: multer.memoryStorage() }),
+  )
+  uploadPlanilha(
+    @UploadedFile() arquivo: Express.Multer.File,
+    @Body('parametros') parametros: string,
+  ): any {
+    let dados;
+
+    if (parametros) {
+      const paramsObj = JSON.parse(parametros);
+      dados = this.planilhasService.processarPlanilha(
+        arquivo.buffer,
+        paramsObj,
+      );
+    } else {
+      dados = this.planilhasService.processarPlanilha(arquivo.buffer);
+    }
 
     return { dados };
   }
@@ -37,7 +52,10 @@ export class PlanilhasController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updatePlanilhaDto: UpdatePlanilhaDto) {
+  update(
+    @Param('id') id: string,
+    @Body() updatePlanilhaDto: UpdatePlanilhaDto,
+  ) {
     return this.planilhasService.update(+id, updatePlanilhaDto);
   }
 
