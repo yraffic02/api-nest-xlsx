@@ -22,9 +22,9 @@
   <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
   [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
 
-## Description
+# API NESTJS XLSX
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+Este projeto se refere à criação de uma API para manipular planilhas do Excel e gerar arquivos VCF a partir dos dados dessas planilhas.
 
 ## Installation
 
@@ -56,6 +56,44 @@ $ npm run test:e2e
 
 # test coverage
 $ npm run test:cov
+```
+## Documentação da API
+
+#### upload da planilha
+
+```http
+  POST /planilhas/upload
+```
+
+Parâmetros da Requisição
+file (Tipo: xlsx): 
+
+**arquivo**: xlsx que deve ser enviado na requisição.
+
+**parametros**: (Tipo: array) este parâmetro é opcional e é um array que contém objetos. Cada objeto representa um parâmetro e tem a seguinte estrutura:
+
+   **coluna**: (Tipo: string) Representa o nome da coluna.
+
+**ref**: (Tipo: string) Referência associada à coluna.
+
+**vcf**: (Tipo: boolean, Opcional) Este parâmetro é opcional e do tipo booleano. Se definido como true, indica que um arquivo vcf deve ser gerado.
+
+
+
+```javascript
+
+file: [arquivo_xlsx]
+parametros: [
+  {
+    "coluna": "nome",
+    "ref": "A"
+  },
+  {
+    "coluna": "contato",
+    "ref": "B"
+  }
+]
+vcf?: true
 ```
 
 ## Support
